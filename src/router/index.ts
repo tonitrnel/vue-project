@@ -15,6 +15,15 @@ const routes: Config[] = [
     component: load('home'),
   },
   {
+    path: '/photo-album/:page',
+    name: 'photo-album',
+    component: load('photo-album'),
+  },
+  {
+    path: '/photo-album',
+    redirect: '/photo-album/1',
+  },
+  {
     path: '*',
     name: 'not-found',
     component: load('exceptions', 'not-found'),
