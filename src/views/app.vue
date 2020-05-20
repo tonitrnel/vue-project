@@ -15,6 +15,7 @@ body {
   font-family: 'Josefin Sans', 'Sarasa Mono T SC', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
   .variables();
 }
 </style>
