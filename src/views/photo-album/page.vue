@@ -1,5 +1,5 @@
 <template>
-  <div class="slideshow">
+  <div class="slideshow" ref="slideshow">
     <component :is="children" />
     <div class="revealer">
       <div class="revealer__item revealer__item--left"></div>
@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { TimelineLite, Expo } from 'gsap'
+import gsap, { TimelineLite, Expo, Quart } from 'gsap'
 import { load } from './children'
 
 // const colors = ['#f6f6f6', '#f0f0f0', '#e3e3e3', '#d7d7d7', '#d0d0d0']
@@ -91,10 +91,20 @@ class FigureItem {
   rect!: DOMRect
   constructor(el: Element) {
     const inner = el.querySelector('.slide__figure-inner') as Element
-    const image = inner.querySelector('.slide__figure-img')
-    const reveal = inner.querySelector('.slide__figure-reveal')
-    const title = el.querySelector('.slide__figure-title')
-    const description = el.querySelector('.slide__figure-description')
+    const image = inner.querySelector('.slide__figure-img') as HTMLImageElement
+    const reveal = inner.querySelector('.slide__figure-reveal') as Element
+    const title = el.querySelector('.slide__figure-title') as Element
+    const description = el.querySelector(
+      '.slide__figure-description'
+    ) as Element
+    this.DOM = {
+      el,
+      inner,
+      image,
+      reveal,
+      title,
+      description,
+    }
     this.calcRect()
   }
   calcRect = (): void => {
@@ -132,31 +142,101 @@ class Slide {
       (v) => new FigureItem(v)
     )
   }
-  // registerEvents() {
-  //   window.addEventListener('resize', this.dispatch)
-  // }
-  // unregisterEvents() {
-  //   window.removeEventListener('resize', this.dispatch)
-  // }
-  // startAnimation() {
-  //   return new Promise((resolve) => {
-  //     const duration = 1
-  //     const ease = Expo.easeOut
-  //     this.timeline = new TimelineLite({ onComplete: resolve }).add('begin')
-  //     for (const item of this.items) {
-  //       this.timeline.to(
-  //         item.DOM.el,
-  //         duration,
-  //         {
-  //           ease,
-  //           startAt: { x: this.direction === 'next' ? 60 : -60, opacity: 1 },
-  //           x: '0%',
-  //         },
-  //         'begin'
-  //       )
-  //     }
-  //   })
-  // }
+  registerEvents(): void {
+    window.addEventListener('resize', this.dispatch)
+  }
+  unregisterEvents(): void {
+    window.removeEventListener('resize', this.dispatch)
+  }
+  startAnimation(): Promise<void> {
+    return new Promise((resolve) => {
+      const duration = 1
+      const ease = Expo.easeOut
+      this.timeline = new TimelineLite({ onComplete: resolve }).add('begin')
+      for (const item of this.items) {
+        this.timeline.to(
+          item.DOM.el,
+          duration,
+          {
+            ease,
+            startAt: { x: this.direction === 'next' ? 60 : -60, opacity: 1 },
+            x: '0%',
+          },
+          'begin'
+        )
+        if (
+          (this.direction == 'next' && item.getSide(this.rect) === 'left') ||
+          (this.direction === 'prev' && item.getSide(this.rect) === 'right')
+        ) {
+          gsap.set(item.DOM.inner, {
+            'transform-origin':
+              this.direction === 'next' ? '100% 50%' : '0% 50%',
+          })
+          this.timeline.to(
+            item.DOM.inner,
+            duration,
+            {
+              ease,
+              startAt: {
+                rotationY: this.direction === 'next' ? 30 : -30,
+              },
+              rotationY: 0.1,
+            },
+            'begin'
+          )
+          this.timeline
+            .to(
+              item.DOM.reveal,
+              duration,
+              {
+                ease,
+                startAt: { x: '0%' },
+                x: this.direction === 'next' ? '-100%' : '100%',
+              },
+              'begin'
+            )
+            .to(
+              item.DOM.image,
+              duration,
+              {
+                ease,
+                startAt: { scale: 1.5 },
+                scale: 1,
+              },
+              'begin'
+            )
+            .to(
+              item.DOM.title,
+              duration * 0.8,
+              {
+                ease: Quart.easeOut,
+                startAt: {
+                  x: this.direction === 'next' ? 15 : -15,
+                  opacity: 0,
+                },
+                x: '0%',
+                opacity: 1,
+              },
+              'begin+=0.25'
+            )
+            .to(
+              item.DOM.description,
+              duration * 0.8,
+              {
+                ease: Quart.easeOut,
+                startAt: {
+                  x: this.direction === 'next' ? 20 : -20,
+                  opacity: 0,
+                },
+                x: '0%',
+                opacity: 1,
+              },
+              'begin+=0.3'
+            )
+        }
+      }
+    })
+  }
 }
 
 export default Vue.extend({
@@ -247,12 +327,15 @@ export default Vue.extend({
       this.hasPrev = page > 1
       this.hasNext = page < this.navs.length
       const scale = (page - 1) / this.navs.length
-      const { indicatorRight, indicatorLeft } = this.$refs as {
+      const { indicatorRight, indicatorLeft, slideshow } = this.$refs as {
         indicatorRight: Element
         indicatorLeft: Element
+        slideshow: Element
       }
-      timeline.to(indicatorRight, 0.5, { scaleX: scale, ease: Expo.easeOut })
-      timeline.to(indicatorLeft, 0.5, { scaleX: 1 - scale, ease: Expo.easeOut })
+      const t2 = new TimelineLite()
+      t2.to(indicatorRight, 0.5, { scaleX: scale, ease: Expo.easeOut })
+      const t3 = new TimelineLite()
+      t3.to(indicatorLeft, 0.5, { scaleX: 1 - scale, ease: Expo.easeOut })
       try {
         this.children = await load(page.toString())
       } catch (e) {
@@ -299,7 +382,7 @@ export default Vue.extend({
   font-family: Futura, futura-pt, Arial, sans-serif;
   &__indicator {
     width: 10px;
-    background-color: #334bf7;
+    background-color: #fff;
     height: 100%;
     left: 0;
     top: 0;

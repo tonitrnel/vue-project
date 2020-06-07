@@ -18,6 +18,7 @@ module.exports = {
       .clear()
       .add('.js')
       .add('.ts')
+      .add('.tsx')
       .add('.vue')
       .add('.json')
       .add('.less')
