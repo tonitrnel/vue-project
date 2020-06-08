@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import '~/components/global/svg-icon'
 import CompositionAPI from '@vue/composition-api'
-import App from './views/tsx/page'
+import App from './views/app.vue'
 import router from './router'
 
 Vue.use(CompositionAPI)
