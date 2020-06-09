@@ -27,6 +27,10 @@ export default {
           link: '/tsx',
           name: 'Vue Composition + TSX测试',
         },
+        {
+          link: '/graphql-example',
+          name: 'GraphQL Example',
+        },
       ],
     }
   },

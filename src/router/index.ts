@@ -7,7 +7,7 @@ function loadVueFile(dir: string, component = 'page') {
   return (): Promise<typeof import('*.vue')> =>
     import(`~/views/${dir}/${component}.vue`)
 }
-function loadVTSXFile(dir: string, component = 'page') {
+function loadTSXFile(dir: string, component = 'page') {
   return (): Promise<typeof import('')> =>
     import(`~/views/${dir}/${component}.tsx`)
 }
@@ -21,7 +21,12 @@ const routes: Config[] = [
   {
     path: '/tsx',
     name: 'tsx',
-    component: loadVTSXFile('tsx'),
+    component: loadTSXFile('tsx'),
+  },
+  {
+    path: '/graphql-example',
+    name: 'graphql-example',
+    component: loadTSXFile('graphql-example'),
   },
   {
     path: '/photo-album/:page',
