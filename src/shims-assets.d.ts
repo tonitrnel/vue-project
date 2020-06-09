@@ -4,9 +4,10 @@ declare module '*.jpg'
 declare module '*.jpeg'
 declare module '*.svg'
 declare module '*.css'
-declare module '*.less' {
+declare module '*.module.less' {
   const styles: {
-    [classname: string]: string
+    [className: string]: string
   }
   export = styles
 }
+declare module '*.less'
