@@ -15,7 +15,7 @@
     "@types/lodash": "^4.14.151",
     "@vue/composition-api": "^0.5.0",
     "core-js": "^3.6.5",
-    "gsap": "^3.2.6",
+    "gsap": "^3.6.0",
     "lodash": "^4.17.19",
     "vue": "^2.6.11",
     "vue-router": "^3.1.6",
